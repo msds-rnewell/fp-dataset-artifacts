@@ -11,7 +11,7 @@ from torch.utils.data.dataloader import DataLoader
 NUM_PREPROCESSING_WORKERS = 2
 
 # New Trainer Class without Shuffling
-class TrainerNew(transformers.Trainer):
+class TrainerNew(Trainer):
 
   # def _get_train_sampler(self) -> Optional[torch.utils.data.sampler.Sampler]:
   #   if isinstance(self.train_dataset, torch.utils.data.IterableDataset):
