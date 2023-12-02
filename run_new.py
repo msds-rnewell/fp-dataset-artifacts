@@ -8,6 +8,43 @@ import json
 
 NUM_PREPROCESSING_WORKERS = 2
 
+# New Trainer Class without Shuffling
+class TrainerNew(transformers.Trainer):
+
+  def get_train_dataloader(self) -> DataLoader:
+        """
+        Returns the training :class:`~torch.utils.data.DataLoader`.
+
+        Will use no sampler if :obj:`self.train_dataset` is a :obj:`torch.utils.data.IterableDataset`, a random sampler
+        (adapted to distributed training if necessary) otherwise.
+
+        Subclass and override this method if you want to inject some custom behavior.
+        """
+        if self.train_dataset is None:
+            raise ValueError("Trainer: training requires a train_dataset.")
+        train_sampler = self._get_train_sampler()
+
+        return DataLoader(
+            self.train_dataset,
+            batch_size=self.args.train_batch_size,
+            sampler=train_sampler,
+            collate_fn=self.data_collator,
+            drop_last=self.args.dataloader_drop_last,
+            num_workers=self.args.dataloader_num_workers,
+        )
+
+  def _get_train_sampler(self) -> Optional[torch.utils.data.sampler.Sampler]:
+    if isinstance(self.train_dataset, torch.utils.data.IterableDataset):
+        return None
+    elif is_torch_tpu_available():
+        return get_tpu_sampler(self.train_dataset)
+    else:
+        return (
+            SequentialSampler(self.train_dataset)
+            if self.args.local_rank == -1
+            else DistributedSampler(self.train_dataset)
+            )
+
 
 def main():
     argp = HfArgumentParser(TrainingArguments)
@@ -124,7 +161,7 @@ def main():
         )
 
     # Select the training configuration
-    trainer_class = Trainer
+    trainer_class = TrainerNew()
     eval_kwargs = {}
     # If you want to use custom metrics, you should define your own "compute_metrics" function.
     # For an example of a valid compute_metrics function, see compute_accuracy in helpers.py.
