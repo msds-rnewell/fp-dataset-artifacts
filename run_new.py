@@ -11,17 +11,17 @@ NUM_PREPROCESSING_WORKERS = 2
 # New Trainer Class without Shuffling
 class TrainerNew(transformers.Trainer):
 
-  def _get_train_sampler(self) -> Optional[torch.utils.data.sampler.Sampler]:
-    if isinstance(self.train_dataset, torch.utils.data.IterableDataset):
-        return None
-    elif is_torch_tpu_available():
-        return get_tpu_sampler(self.train_dataset)
-    else:
-        return (
-            SequentialSampler(self.train_dataset)
-            if self.args.local_rank == -1
-            else DistributedSampler(self.train_dataset)
-            )
+  # def _get_train_sampler(self) -> Optional[torch.utils.data.sampler.Sampler]:
+  #   if isinstance(self.train_dataset, torch.utils.data.IterableDataset):
+  #       return None
+  #   elif is_torch_tpu_available():
+  #       return get_tpu_sampler(self.train_dataset)
+  #   else:
+  #       return (
+  #           SequentialSampler(self.train_dataset)
+  #           if self.args.local_rank == -1
+  #           else DistributedSampler(self.train_dataset)
+  #           )
 
   def get_train_dataloader(self) -> DataLoader:
         """
@@ -34,7 +34,7 @@ class TrainerNew(transformers.Trainer):
         """
         if self.train_dataset is None:
             raise ValueError("Trainer: training requires a train_dataset.")
-        train_sampler = self._get_train_sampler()
+        train_sampler = SequentialSampler(self.train_dataset) #self._get_train_sampler()
 
         return DataLoader(
             self.train_dataset,
