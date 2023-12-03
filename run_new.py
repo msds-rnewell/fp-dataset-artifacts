@@ -163,7 +163,7 @@ def main():
         )
 
     # Select the training configuration
-    trainer_class = TrainerNew
+    #trainer_class = TrainerNew
     eval_kwargs = {}
     # If you want to use custom metrics, you should define your own "compute_metrics" function.
     # For an example of a valid compute_metrics function, see compute_accuracy in helpers.py.
@@ -189,7 +189,7 @@ def main():
         return compute_metrics(eval_preds)
 
     # Initialize the Trainer object with the specified arguments and the model and dataset we loaded above
-    trainer = trainer_class(
+    trainer = TrainerNew(
         model=model,
         args=training_args,
         train_dataset=train_dataset_featurized,
